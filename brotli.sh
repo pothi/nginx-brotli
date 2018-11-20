@@ -46,6 +46,10 @@ nginx_repo_add() {
         distro=ubuntu
     fi
 
+    if [ "$distro" == "linuxmint" ] ; then
+        distro=ubuntu
+    fi
+
     [ -f nginx_signing.key ] && rm nginx_signing.key
     curl -LSsO http://nginx.org/keys/nginx_signing.key
     check_result $? 'Nginx key could not be downloaded!'
@@ -83,6 +87,10 @@ case "$codename" in
         nginx_repo_add
         ;;
     "juno")
+        codename=bionic
+        nginx_repo_add
+        ;;
+     "tara")
         codename=bionic
         nginx_repo_add
         ;;
