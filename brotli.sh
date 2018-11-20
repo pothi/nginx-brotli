@@ -7,10 +7,12 @@
 
 # compile Nginx from the official repo with brotli compression
 
-[ ! -d /root/log ] && mkdir /root/log
+[ ! -d ${HOME}/log ] && mkdir ${HOME}/log
+
+G_DIR="$(pwd)"
 
 # logging everything
-log_file=/root/log/brotli.log
+log_file=${HOME}/log/brotli.log
 exec > >(tee -a ${log_file} )
 exec 2> >(tee -a ${log_file} >&2)
 
@@ -25,11 +27,11 @@ check_result() {
 export DEBIAN_FRONTEND=noninteractive
 
 printf '%-72s' "Updating apt repos..."
-apt-get -qq update
+sudo apt-get -qq update
 echo done.
 
 printf '%-72s' "Installing pre-requisites..."
-apt-get -qq install dpkg-dev build-essential zlib1g-dev libpcre3 libpcre3-dev unzip
+sudo apt-get -qq install dpkg-dev build-essential zlib1g-dev libpcre3 libpcre3-dev unzip
 echo done.
 
 codename=$(lsb_release -c -s)
@@ -37,7 +39,6 @@ codename=$(lsb_release -c -s)
 # function to add the official Nginx.org repo
 nginx_repo_add() {
     distro=$(gawk -F= '/^ID=/{print $2}' /etc/os-release)
-    codename=$(lsb_release -c -s)
     if [ "$codename" == "juno" ] ; then
         codename=bionic
     fi
@@ -53,7 +54,7 @@ nginx_repo_add() {
     [ -f nginx_signing.key ] && rm nginx_signing.key
     curl -LSsO http://nginx.org/keys/nginx_signing.key
     check_result $? 'Nginx key could not be downloaded!'
-    apt-key add nginx_signing.key &> /dev/null
+    sudo apt-key add nginx_signing.key &> /dev/null
     check_result $? 'Nginx key could not be added!'
     rm nginx_signing.key
 
@@ -67,12 +68,12 @@ nginx_repo_add() {
         nginx_src_url="https://nginx.org/packages/${distro}/"
     fi
 
-    [ -f /etc/apt/sources.list.d/nginx.list ] && rm /etc/apt/sources.list.d/nginx.list
-    echo "deb ${nginx_src_url} ${codename} nginx" > /etc/apt/sources.list.d/nginx.list
-    echo "deb-src ${nginx_src_url} ${codename} nginx" >> /etc/apt/sources.list.d/nginx.list
+    [ -f /etc/apt/sources.list.d/nginx.list ] && sudo rm /etc/apt/sources.list.d/nginx.list
+    echo "deb ${nginx_src_url} ${codename} nginx" | sudo tee /etc/apt/sources.list.d/nginx.list
+    echo "deb-src ${nginx_src_url} ${codename} nginx" | sudo tee -a /etc/apt/sources.list.d/nginx.list
 
     # finally update the local apt cache
-    apt-get update -qq
+    sudo apt-get update -qq
     check_result $? 'Something went wrong while updating apt repos.'
 }
 
@@ -100,41 +101,53 @@ case "$codename" in
         ;;
 esac
 
-cd /usr/local/src
+sudo install -o ${UID} -d /usr/local/src/${USER}
+cd /usr/local/src/${USER}
 apt-get source nginx
-apt-get build-dep nginx -y
+sudo apt-get build-dep nginx -y
 
 git clone --recursive https://github.com/eustas/ngx_brotli
-
-cd /usr/local/src/nginx-*/
+sudo ln -s /usr/local/src/${USER}/ngx_brotli /usr/local/src/ngx_brotli
+sudo chown ${UID}:${GID} /usr/local/src/ngx_brotli
+cd /usr/local/src/${USER}/nginx-*/
 
 # modify the existing config
-grep -wq '--add-module=/usr/local/src/ngx_brotli' debian/rules || sed -i -e '/\.\/configure/ s:$: --add-module=/usr/local/src/ngx_brotli:' debian/rules
+sed -i -e '/\.\/configure/ s:$: --add-module=/usr/local/src/ngx_brotli:' debian/rules
+
+# if gcc 8 is installed add patch to nginx 
+if [ "$(gcc -dumpversion)" == "8" ]; then
+	mkdir -p debian/patches
+	cp ${G_DIR}/gcc-8_fix.diff debian/patches/gcc-8_fix
+	echo "gcc-8_fix" > debian/patches/series
+fi
 
 # build the updated pacakge
 dpkg-buildpackage -b
 
 # optional
 # install the updated package in the current server
-cd /usr/local/src
-dpkg -i nginx*.deb
+cd /usr/local/src/${USER}
 
-# take a backup
-[ ! -d ~/backups/ ] && mkdir ~/backups
-mv nginx*.deb ~/backups/
+sudo apt-mark unhold nginx
+sudo dpkg -i nginx_*.deb
 
-# remove all the sources and apt sources file
+# print info about remove all the sources and apt sources file
 cd ~/
-rm -rf /usr/local/src/nginx*
-rm -rf /usr/local/src/ngx_brotli
-rm /etc/apt/sources.list.d/nginx.list
-apt-get -qq update
 
+printf "
+# To clean up after install You can run
+ rm -rf /usr/local/src/$(echo ${USER})/nginx*
+ rm -rf /usr/local/src/$(echo ${USER})/ngx_brotli
+ sudo rm /etc/apt/sources.list.d/nginx.list
+ sudo apt-get -qq update
+"
 # hold the package nginx from updating accidentally in the future by someone else!
-apt-mark hold nginx
+sudo apt-mark hold nginx
 
 # stop the previously running instance, if any
-nginx -t && systemctl stop nginx
+sudo nginx -t && sudo systemctl stop nginx
 
 # start the new Nginx instance
-nginx -t && systemctl start nginx
+sudo nginx -t && sudo systemctl start nginx
+
+
