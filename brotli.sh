@@ -101,14 +101,14 @@ case "$codename" in
         ;;
 esac
 
-sudo install -o ${UID} -d /usr/local/src/${USER}
+sudo install -o ${UID} -g $(id -gn $USER) -d /usr/local/src/${USER}
 cd /usr/local/src/${USER}
 apt-get source nginx
 sudo apt-get build-dep nginx -y
 
 git clone --recursive https://github.com/eustas/ngx_brotli
 sudo ln -s /usr/local/src/${USER}/ngx_brotli /usr/local/src/ngx_brotli
-sudo chown ${UID}:${GID} /usr/local/src/ngx_brotli
+sudo chown ${USER}:$USER:$(id -gn $USER) /usr/local/src/ngx_brotli
 cd /usr/local/src/${USER}/nginx-*/
 
 # modify the existing config
