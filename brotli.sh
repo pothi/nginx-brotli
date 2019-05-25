@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# version 1.1
+
 # use it while developing / testing.
 # you may use it in production as well.
 # set -o errexit -o pipefail -o noclobber -o nounset
@@ -113,7 +115,7 @@ dpkg -i nginx*.deb
 
 # take a backup
 [ ! -d ~/backups/ ] && mkdir ~/backups
-mv nginx*.deb ~/backups/
+cp nginx*.deb ~/backups/nginx-$(date +%F)/
 
 # remove all the sources and apt sources file
 cd ~/

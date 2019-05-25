@@ -1,11 +1,16 @@
 # Compile Nginx from Source with Brotli Support
 
-This little script compiles Nginx from source with [Brotli](https://opensource.googleblog.com/2015/09/introducing-brotli-new-compression.html) support.
+This little script compiles Nginx from source with [Brotli](https://opensource.googleblog.com/2015/09/introducing-brotli-new-compression.html) support. In particular, it uses [https://github.com/eustas/ngx_brotli/](https://github.com/eustas/ngx_brotli/) to compile Nginx.
 
 ## Supported Platforms
 
 - Debian 9
 - Ubuntu 16.04 and Ubuntu 18.04
+
+## Tested Nginx versions
+
+- Stable versions: 1.16
+- Mainline versions: 1.17
 
 ## What does it do?
 
@@ -18,8 +23,15 @@ Both files depend on each other. So, one can not work, if other is not installle
 
 ## How to install?
 
-Once you have the `.deb` files, install them using `sudo dpkg -i nginx*.deb`.
+Run the script as `root` and the script tries to install the `.deb` files automatically, replacing the existing Nginx installation. 
+
+Or you can install manually using `sudo dpkg -i nginx*.deb`, once you have the `.deb` files at the end of the execution of the script.
 
 ## How to compile?
 
-Download the script, go through what it does and execute it under the user with sudo privilege. It may take a while to compile depending on the memory and CPU in your server.
+Download the script, go through what it does (note: never trust any script on the internet) and execute it as root user. It may take a while to compile depending on the memory and CPU in your server.
+
+## Contributors and Sources
+
+* [Rafał Michalski](https://github.com/PLumowina) - provided patch for gcc-8 and brought a number of best practices to this script (yet to merge his changes, though).
+* [Eugene Kliuchnikov](https://github.com/eustas) - this script is based on his work at [https://github.com/eustas/ngx_brotli](https://github.com/eustas/ngx_brotli).
