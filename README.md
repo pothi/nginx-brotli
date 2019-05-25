@@ -6,6 +6,7 @@ This little script compiles Nginx from source with [Brotli](https://opensource.g
 
 - Debian 9
 - Ubuntu 16.04 and Ubuntu 18.04
+- Linux Mint 19 Tara
 
 ## Tested Nginx versions
 

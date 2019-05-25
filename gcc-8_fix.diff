@@ -1,0 +1,166 @@
+Index: src/http/modules/ngx_http_fastcgi_module.c
+===================================================================
+--- a/src/http/modules/ngx_http_fastcgi_module.c
++++ b/src/http/modules/ngx_http_fastcgi_module.c
+@@ -3265,5 +3265,6 @@
+         }
+ 
+-        copy->code = (ngx_http_script_code_pt) ngx_http_script_copy_len_code;
++        copy->code = (ngx_http_script_code_pt) (void *)
++                                                 ngx_http_script_copy_len_code;
+         copy->len = src[i].key.len;
+ 
+@@ -3274,5 +3275,6 @@
+         }
+ 
+-        copy->code = (ngx_http_script_code_pt) ngx_http_script_copy_len_code;
++        copy->code = (ngx_http_script_code_pt) (void *)
++                                                 ngx_http_script_copy_len_code;
+         copy->len = src[i].skip_empty;
+ 
+
+Index: src/http/modules/ngx_http_grpc_module.c
+===================================================================
+--- a/src/http/modules/ngx_http_grpc_module.c
++++ b/src/http/modules/ngx_http_grpc_module.c
+@@ -4390,5 +4390,6 @@
+         }
+ 
+-        copy->code = (ngx_http_script_code_pt) ngx_http_script_copy_len_code;
++        copy->code = (ngx_http_script_code_pt) (void *)
++                                                 ngx_http_script_copy_len_code;
+         copy->len = src[i].key.len;
+ 
+
+Index: src/http/modules/ngx_http_proxy_module.c
+===================================================================
+--- a/src/http/modules/ngx_http_proxy_module.c
++++ b/src/http/modules/ngx_http_proxy_module.c
+@@ -3494,5 +3494,6 @@
+         }
+ 
+-        copy->code = (ngx_http_script_code_pt) ngx_http_script_copy_len_code;
++        copy->code = (ngx_http_script_code_pt) (void *)
++                                                 ngx_http_script_copy_len_code;
+         copy->len = src[i].key.len;
+ 
+
+Index: src/http/modules/ngx_http_scgi_module.c
+===================================================================
+--- a/src/http/modules/ngx_http_scgi_module.c
++++ b/src/http/modules/ngx_http_scgi_module.c
+@@ -1725,5 +1725,6 @@
+         }
+ 
+-        copy->code = (ngx_http_script_code_pt) ngx_http_script_copy_len_code;
++        copy->code = (ngx_http_script_code_pt) (void *)
++                                                 ngx_http_script_copy_len_code;
+         copy->len = src[i].key.len + 1;
+ 
+@@ -1734,5 +1735,6 @@
+         }
+ 
+-        copy->code = (ngx_http_script_code_pt) ngx_http_script_copy_len_code;
++        copy->code = (ngx_http_script_code_pt) (void *)
++                                                 ngx_http_script_copy_len_code;
+         copy->len = src[i].skip_empty;
+ 
+
+Index: src/http/modules/ngx_http_uwsgi_module.c
+===================================================================
+--- a/src/http/modules/ngx_http_uwsgi_module.c
++++ b/src/http/modules/ngx_http_uwsgi_module.c
+@@ -1988,5 +1988,6 @@
+         }
+ 
+-        copy->code = (ngx_http_script_code_pt) ngx_http_script_copy_len_code;
++        copy->code = (ngx_http_script_code_pt) (void *)
++                                                 ngx_http_script_copy_len_code;
+         copy->len = src[i].key.len;
+ 
+@@ -1997,5 +1998,6 @@
+         }
+ 
+-        copy->code = (ngx_http_script_code_pt) ngx_http_script_copy_len_code;
++        copy->code = (ngx_http_script_code_pt) (void *)
++                                                 ngx_http_script_copy_len_code;
+         copy->len = src[i].skip_empty;
+ 
+
+Index: src/http/ngx_http_script.c
+===================================================================
+--- a/src/http/ngx_http_script.c
++++ b/src/http/ngx_http_script.c
+@@ -696,5 +696,6 @@
+     }
+ 
+-    code->code = (ngx_http_script_code_pt) ngx_http_script_copy_len_code;
++    code->code = (ngx_http_script_code_pt) (void *)
++                                                 ngx_http_script_copy_len_code;
+     code->len = len;
+ 
+@@ -785,5 +786,6 @@
+     }
+ 
+-    code->code = (ngx_http_script_code_pt) ngx_http_script_copy_var_len_code;
++    code->code = (ngx_http_script_code_pt) (void *)
++                                             ngx_http_script_copy_var_len_code;
+     code->index = (uintptr_t) index;
+ 
+@@ -1179,6 +1181,6 @@
+     }
+ 
+-    code->code = (ngx_http_script_code_pt)
+-                      ngx_http_script_copy_capture_len_code;
++    code->code = (ngx_http_script_code_pt) (void *)
++                                         ngx_http_script_copy_capture_len_code;
+     code->n = 2 * n;
+ 
+@@ -1294,5 +1296,6 @@
+     }
+ 
+-    code->code = (ngx_http_script_code_pt) ngx_http_script_full_name_len_code;
++    code->code = (ngx_http_script_code_pt) (void *)
++                                            ngx_http_script_full_name_len_code;
+     code->conf_prefix = sc->conf_prefix;
+ 
+
+Index: src/stream/ngx_stream_script.c
+===================================================================
+--- a/src/stream/ngx_stream_script.c
++++ b/src/stream/ngx_stream_script.c
+@@ -588,5 +588,6 @@
+     }
+ 
+-    code->code = (ngx_stream_script_code_pt) ngx_stream_script_copy_len_code;
++    code->code = (ngx_stream_script_code_pt) (void *)
++                                               ngx_stream_script_copy_len_code;
+     code->len = len;
+ 
+@@ -678,6 +679,6 @@
+     }
+ 
+-    code->code = (ngx_stream_script_code_pt)
+-                      ngx_stream_script_copy_var_len_code;
++    code->code = (ngx_stream_script_code_pt) (void *)
++                                           ngx_stream_script_copy_var_len_code;
+     code->index = (uintptr_t) index;
+ 
+@@ -768,6 +769,6 @@
+     }
+ 
+-    code->code = (ngx_stream_script_code_pt)
+-                      ngx_stream_script_copy_capture_len_code;
++    code->code = (ngx_stream_script_code_pt) (void *)
++                                       ngx_stream_script_copy_capture_len_code;
+     code->n = 2 * n;
+ 
+@@ -860,5 +861,5 @@
+     }
+ 
+-    code->code = (ngx_stream_script_code_pt)
++    code->code = (ngx_stream_script_code_pt) (void *)
+                                           ngx_stream_script_full_name_len_code;
+     code->conf_prefix = sc->conf_prefix;
+
+
