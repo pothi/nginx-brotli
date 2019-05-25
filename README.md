@@ -30,9 +30,9 @@ Or you can install manually using `sudo dpkg -i nginx*.deb`, once you have the `
 
 ## How to compile?
 
-Download the script, go through what it does (note: never trust any script on the internet) and execute it as root user. It may take a while to compile depending on the memory and CPU in your server.
+Download the script (and gcc patch file, if needed), go through what it does (note: never trust any script on the internet) and execute it as a user with sudo privilege. It may take a while to compile depending on the memory and CPU in your server.
 
 ## Contributors and Sources
 
-* [Rafał Michalski](https://github.com/PLumowina) - provided patch for gcc-8 and brought a number of best practices to this script (yet to merge his changes, though).
+* [Rafał Michalski](https://github.com/PLumowina) - provided patch for gcc-8 and brought a number of best practices to this script.
 * [Eugene Kliuchnikov](https://github.com/eustas) - this script is based on his work at [https://github.com/eustas/ngx_brotli](https://github.com/eustas/ngx_brotli).
