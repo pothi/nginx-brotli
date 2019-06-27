@@ -149,6 +149,7 @@ printf "
 "
 # hold the package nginx from updating accidentally in the future by someone else!
 sudo apt-mark hold nginx
+sudo apt-mark hold nginx-dbg
 
 # stop the previously running instance, if any
 sudo nginx -t && sudo systemctl stop nginx
