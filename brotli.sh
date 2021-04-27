@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 
-# version 1.2
+# version 2.0
 
 # use it while developing / testing.
-# you may use it in production as well.
 # set -o errexit -o pipefail -o noclobber -o nounset
 # set -x
 
@@ -36,7 +35,7 @@ printf '%-72s' "Installing pre-requisites..."
 sudo apt-get -qq install dpkg-dev build-essential zlib1g-dev libpcre3 libpcre3-dev unzip
 echo done.
 
-codename=$(lsb_release -c -s)
+codename=$(lsb_release -cs)
 
 # function to add the official Nginx.org repo
 nginx_repo_add() {
@@ -53,12 +52,13 @@ nginx_repo_add() {
         distro=ubuntu
     fi
 
-    [ -f nginx_signing.key ] && rm nginx_signing.key
-    curl -LSsO http://nginx.org/keys/nginx_signing.key
-    check_result $? 'Nginx key could not be downloaded!'
-    sudo apt-key add nginx_signing.key &> /dev/null
-    check_result $? 'Nginx key could not be added!'
-    rm nginx_signing.key
+    # Remove old key if it exists
+    curl -LSs -o /tmp/nginx_signing.key http://nginx.org/keys/nginx_signing.key
+        check_result $? 'Nginx key could not be downloaded!'
+    sudo apt-key add /tmp/nginx_signing.key &> /dev/null
+        check_result $? 'Nginx key could not be added!'
+    sudo mv /tmp/nginx_signing.key /etc/apt/trusted.gpg.d/nginx_signing.asc
+        check_result $? 'Nginx key could not be added to apt trusted key storage!'
 
     # for updated info, please see https://nginx.org/en/linux_packages.html#stable
     nginx_branch= # leave this empty to install stable version
@@ -71,12 +71,12 @@ nginx_repo_add() {
     fi
 
     [ -f /etc/apt/sources.list.d/nginx.list ] && sudo rm /etc/apt/sources.list.d/nginx.list
-    echo "deb ${nginx_src_url} ${codename} nginx" | sudo tee /etc/apt/sources.list.d/nginx.list
-    echo "deb-src ${nginx_src_url} ${codename} nginx" | sudo tee -a /etc/apt/sources.list.d/nginx.list
+    echo "deb [arch=amd64] ${nginx_src_url} ${codename} nginx" | sudo tee /etc/apt/sources.list.d/nginx.list
+    echo "deb-src [arch=amd64] ${nginx_src_url} ${codename} nginx" | sudo tee -a /etc/apt/sources.list.d/nginx.list
 
     # finally update the local apt cache
     sudo apt-get update -qq
-    check_result $? 'Something went wrong while updating apt repos.'
+        check_result $? 'Something went wrong while updating apt repos.'
 }
 
 case "$codename" in
@@ -87,6 +87,9 @@ case "$codename" in
         nginx_repo_add
         ;;
     "bionic")
+        nginx_repo_add
+        ;;
+    "focal")
         nginx_repo_add
         ;;
     "juno")
@@ -108,9 +111,14 @@ cd /usr/local/src/${USER}
 apt-get source nginx
 sudo apt-get build-dep nginx -y
 
-git clone --recursive https://github.com/eustas/ngx_brotli
+if [ ! -d ngx_brotli ]; then
+    git clone -q --recursive https://github.com/google/ngx_brotli
+else
+    git -C ngx_brotli pull -q origin master
+fi
+sudo rm /usr/local/src/ngx_brotli &> /dev/null
 sudo ln -s /usr/local/src/${USER}/ngx_brotli /usr/local/src/ngx_brotli
-sudo chown ${USER}:$USER:$(id -gn $USER) /usr/local/src/ngx_brotli
+sudo chown ${USER}:$USER /usr/local/src/ngx_brotli
 cd /usr/local/src/${USER}/nginx-*/
 
 # modify the existing config
@@ -129,13 +137,11 @@ dpkg-buildpackage -b
 # optional
 # install the updated package in the current server
 cd /usr/local/src/${USER}
+sudo dpkg -i nginx_*.deb
 
 # take a backup
-[ ! -d ~/backups/ ] && mkdir ~/backups
+[ ! -d ~/backups/nginx-$(date +%F) ] && mkdir -p ~/backups/nginx-$(date +%F)
 cp nginx*.deb ~/backups/nginx-$(date +%F)/
-
-# sudo apt-mark unhold nginx
-sudo dpkg -i nginx_*.deb
 
 # print info about remove all the sources and apt sources file
 cd ~/
@@ -157,4 +163,4 @@ sudo nginx -t && sudo systemctl stop nginx
 # start the new Nginx instance
 sudo nginx -t && sudo systemctl start nginx
 
-
+echo 'All done.'

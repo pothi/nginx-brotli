@@ -1,17 +1,17 @@
 # Compile Nginx from Source with Brotli Support
 
-This little script compiles Nginx from source with [Brotli](https://opensource.googleblog.com/2015/09/introducing-brotli-new-compression.html) support. In particular, it uses [https://github.com/eustas/ngx_brotli/](https://github.com/eustas/ngx_brotli/) to compile Nginx.
+This little script compiles Nginx from source with [Brotli](https://opensource.googleblog.com/2015/09/introducing-brotli-new-compression.html) support. In particular, it uses [https://github.com/google/ngx_brotli](https://github.com/google/ngx_brotli) (earlier used [https://github.com/eustas/ngx_brotli/](https://github.com/eustas/ngx_brotli/)) to compile Nginx.
 
 ## Supported Platforms
 
 - Debian 9
-- Ubuntu 16.04 and Ubuntu 18.04
+- Ubuntu 16.04, Ubuntu 18.04 and Ubuntu 20.04
 - Linux Mint 19 Tara
 
 ## Tested Nginx versions
 
-- Stable versions: 1.16
-- Mainline versions: 1.17
+- Stable versions: 1.16, 1.18 and 1.20
+- Mainline versions: 1.17, 1.19
 
 ## What does it do?
 
@@ -36,3 +36,4 @@ Download the script (and gcc patch file, if needed), go through what it does (no
 
 * [Rafał Michalski](https://github.com/PLumowina) - provided patch for gcc-8 and brought a number of best practices to this script.
 * [Eugene Kliuchnikov](https://github.com/eustas) - this script is based on his work at [https://github.com/eustas/ngx_brotli](https://github.com/eustas/ngx_brotli).
+* [https://github.com/google/ngx_brotli](https://github.com/google/ngx_brotli) - Original work on brotli for Nginx by Google.
