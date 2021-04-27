@@ -1,6 +1,16 @@
 #!/usr/bin/env bash
 
-# version 2.0
+# version 2.1
+
+# version 2.1
+#   date: 2021-04-27
+#   changes:
+#   - fix minor issues
+# version 2
+#   date: 2021-04-27
+#   changes:
+#   - migrate to Google repo
+#   - test with Ubuntu 20.04
 
 # use it while developing / testing.
 # set -o errexit -o pipefail -o noclobber -o nounset
@@ -71,8 +81,8 @@ nginx_repo_add() {
     fi
 
     [ -f /etc/apt/sources.list.d/nginx.list ] && sudo rm /etc/apt/sources.list.d/nginx.list
-    echo "deb [arch=amd64] ${nginx_src_url} ${codename} nginx" | sudo tee /etc/apt/sources.list.d/nginx.list
-    echo "deb-src [arch=amd64] ${nginx_src_url} ${codename} nginx" | sudo tee -a /etc/apt/sources.list.d/nginx.list
+    echo "deb [arch=amd64] ${nginx_src_url} ${codename} nginx" | sudo tee /etc/apt/sources.list.d/nginx.list &> /dev/null
+    echo "deb-src [arch=amd64] ${nginx_src_url} ${codename} nginx" | sudo tee -a /etc/apt/sources.list.d/nginx.list &> /dev/null
 
     # finally update the local apt cache
     sudo apt-get update -qq
@@ -108,7 +118,7 @@ esac
 
 sudo install -o ${UID} -g $(id -gn $USER) -d /usr/local/src/${USER}
 cd /usr/local/src/${USER}
-apt-get source nginx
+sudo apt-get source nginx
 sudo apt-get build-dep nginx -y
 
 if [ ! -d ngx_brotli ]; then
@@ -116,7 +126,8 @@ if [ ! -d ngx_brotli ]; then
 else
     git -C ngx_brotli pull -q origin master
 fi
-sudo rm /usr/local/src/ngx_brotli &> /dev/null
+
+[ -L /usr/local/src/ngx_brotli ] && sudo rm /usr/local/src/ngx_brotli
 sudo ln -s /usr/local/src/${USER}/ngx_brotli /usr/local/src/ngx_brotli
 sudo chown ${USER}:$USER /usr/local/src/ngx_brotli
 cd /usr/local/src/${USER}/nginx-*/
